@@ -11,14 +11,38 @@ from .constants import (
 )
 
 
+class Club(models.Model):
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name='Название клуба'
+    )
+    city = models.CharField(
+        max_length=50,
+        verbose_name='Город',
+        blank=True,
+        null=True
+    )
+
+    class Meta:
+        verbose_name = 'Клуб'
+        verbose_name_plural = 'Клубы'
+        ordering = ('name',)
+
+    def __str__(self):
+        return self.name
+
+
 class Coach(models.Model):
     first_name = models.CharField(max_length=50, verbose_name='Имя')
     last_name = models.CharField(max_length=50, verbose_name='Фамилия')
-    club = models.CharField(
-        max_length=100,
+    club = models.ForeignKey(
+        Club,
+        on_delete=models.SET_NULL,
+        related_name='coaches',
         verbose_name='Клуб',
-        blank=True,
-        null=True
+        null=True,
+        blank=True
     )
 
     class Meta:
@@ -81,7 +105,16 @@ class Swimmer(models.Model):
         Coach,
         on_delete=models.SET_NULL,
         null=True,
+        blank=True,
         related_name='swimmers'
+    )
+    club = models.ForeignKey(
+        Club,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='swimmers',
+        verbose_name='Клуб'
     )
 
     class Meta:

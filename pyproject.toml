@@ -11,3 +11,42 @@ dependencies = [
     "djangorestframework>=3.17.1",
     "python-docx>=1.2.0",
 ]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.6.0",
+    "ruff>=0.15.16",
+]
+
+[tool.ruff]
+# Длина строки по PEP 8
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+# Какие правила проверять:
+# E, F — ошибки и стиль (как в Flake8)
+# I — сортировка импортов (как isort)
+# B — поиск вероятных багов
+select = ["E", "F", "I", "B"]
+ignore = []
+exclude = [
+    ".eggs",
+    ".git",
+    ".mypy_cache",
+    ".tox",
+    ".venv",
+    "venv",
+    "build",
+    "dist",
+    "manage.py",
+    "**/migrations/*"
+]
+
+# Настройка сортировки импортов
+[tool.ruff.lint.isort]
+known-first-party = ["swim_contest", "api"]
+
+[tool.ruff.format]
+quote-style = "single"  # использование одинарных кавычек (по желанию)
+indent-style = "space"

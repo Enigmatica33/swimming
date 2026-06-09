@@ -1,0 +1,13 @@
+[project]
+name = "swimming"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=6.0.6",
+    "django-bootstrap5>=26.2",
+    "django-widget-tweaks>=1.5.1",
+    "djangorestframework>=3.17.1",
+    "python-docx>=1.2.0",
+]

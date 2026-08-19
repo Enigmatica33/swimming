@@ -1,0 +1,17 @@
+{% extends "admin/change_form.html" %}
+
+{% block object-tools-items %}
+    {{ block.super }}
+    {% if original %}
+        <li>
+            <a href="{% url 'admin:swim_contest_contest_results' original.pk %}" class="historylink">
+                Заплывы
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'admin:swim_contest_contest_generate_races' original.pk %}" class="historylink">
+                Сформировать заплывы
+            </a>
+        </li>
+    {% endif %}
+{% endblock %}

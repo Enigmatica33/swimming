@@ -1,0 +1,57 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div id="content-main">
+    <h1>{{ title }}</h1>
+
+    <div class="pagination" style="margin-bottom: 20px; font-weight: bold;">
+        {% if page_obj.has_previous %}
+            <a href="?p={{ page_obj.previous_page_number }}">« Предыдущий заплыв</a>
+        {% endif %}
+
+        <span style="margin: 0 15px;">
+            Заплыв {{ page_obj.number }} из {{ page_obj.paginator.count }}
+        </span>
+
+        {% if page_obj.has_next %}
+            <a href="?p={{ page_obj.next_page_number }}">Следующий заплыв »</a>
+        {% endif %}
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ formset.management_form }}
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f8f8f8; border-bottom: 2px solid #ccc;">
+                    <th style="padding: 10px; text-align: left;">Дорожка</th>
+                    <th style="padding: 10px; text-align: left;">Пловец</th>
+                    <th style="padding: 10px; text-align: left;">Категория</th>
+                    <th style="padding: 10px; text-align: left;">Время</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for form in formset %}
+                <tr style="border-bottom: 1px solid #eee;">
+                    {{ form.id }}
+                    <td style="padding: 10px;">{{ form.path_number }}</td>
+                    <td style="padding: 10px;">{{ form.instance.entry.swimmer }}</td>
+                    <td style="padding: 10px; font-size: 0.9em; color: #666;">
+                        {{ form.instance.entry.category }}
+                    </td>
+                    <td style="padding: 10px;">
+                        {{ form.result_time }}
+                        <div style="display:none;">{{ form.race_number }}</div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="submit-row" style="margin-top: 20px;">
+            <input type="submit" class="default" value="Сохранить изменения в заплыве" name="_save">
+            <a href="../" class="closelink" style="margin-left: 20px;">Назад к соревнованию</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

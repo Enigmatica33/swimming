@@ -4,7 +4,7 @@ GENDERS = (
     ('1_young_men', 'юноши'),
     ('0_young_women', 'девушки'),
     ('1_men', 'мужчины'),
-    ('0_women', 'женщины')
+    ('0_women', 'женщины'),
 )
 
 DISTANCES = (
@@ -23,10 +23,11 @@ AGES = (
     (11, '11-12 лет'),
     (13, '13-14 лет'),
     (15, '15-24 года'),
-    (25, '25+')
+    (25, '25+'),
 )
 
 PATHS = [(str(i), str(i)) for i in range(1, 5)]  # Дорожки от 1 до 4
 
 MIN_RACE_NUMBER = 1
 MAX_RACE_NUMBER = 500
+DEFAULT_SWIMSTYLE = 'вольный стиль'

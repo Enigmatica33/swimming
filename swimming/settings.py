@@ -20,6 +20,7 @@ INSTALLED_APPS = [
     'api.apps.ApiConfig',
     'swim_contest.apps.SwimContestConfig',
     'rest_framework',
+    'drf_spectacular',
     'django_bootstrap5',
     'widget_tweaks',
 ]
@@ -92,3 +93,17 @@ USE_TZ = True
 STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Swimming Contest API',
+    'DESCRIPTION': 'API для управления соревнованиями по плаванию, '
+    'заявками и результатами заплывов.',
+    'VERSION': '0.1.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+}

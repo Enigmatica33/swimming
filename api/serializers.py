@@ -80,10 +80,10 @@ class SwimmerSerializer(serializers.ModelSerializer):
             'age',
         )
 
-    def get_coach_name(self, obj):
+    def get_coach_name(self, obj) -> str | None:
         return str(obj.coach) if obj.coach else None
 
-    def get_age(self, obj):
+    def get_age(self, obj) -> int | None:
         return obj.get_age()
 
 
@@ -125,7 +125,7 @@ class EntrySerializer(serializers.ModelSerializer):
             'is_approved',
         )
 
-    def get_age(self, obj):
+    def get_age(self, obj) -> int | None:
         return obj.determine_age()
 
 

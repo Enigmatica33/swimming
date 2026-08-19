@@ -9,6 +9,7 @@ dependencies = [
     "django-bootstrap5>=26.2",
     "django-widget-tweaks>=1.5.1",
     "djangorestframework>=3.17.1",
+    "drf-spectacular>=0.28.0",
     "python-docx>=1.2.0",
 ]
 

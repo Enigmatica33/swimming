@@ -63,7 +63,9 @@ def resolve_category_for(sex, distance, age):
     gender = resolve_gender(sex, age)
     if gender is None or not distance:
         return None
-    return Category.objects.filter(gender=gender, distance=distance, age_group=group).first()
+    return Category.objects.filter(
+        gender=gender, distance=distance, age_group=group
+    ).first()
 
 
 def get_active_contest():

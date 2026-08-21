@@ -21,20 +21,26 @@ export default function ResultsPage() {
 
   if (loading) return <p className="loading">Загрузка…</p>;
 
+  const first = results[0];
+
   return (
     <div className="card">
       <h2>Результаты</h2>
 
       {error && <div className="error">{error}</div>}
 
+      {first && (
+        <p className="contest-info">
+          <strong>{first.contest_name}</strong>{' '}
+          {first.contest_date || ''}
+        </p>
+      )}
+
       <table>
         <thead>
           <tr>
             <th>ID</th>
             <th>Пловец</th>
-            <th>Соревнование</th>
-            <th>Категория</th>
-            <th>Стиль</th>
             <th>Заплыв</th>
             <th>Дорожка</th>
             <th>Время</th>
@@ -45,12 +51,9 @@ export default function ResultsPage() {
             <tr key={r.id}>
               <td>{r.id}</td>
               <td>{r.swimmer_name}</td>
-              <td>{r.contest_name}</td>
-              <td>{r.category_title || '—'}</td>
-              <td>{r.swimstyle_name || '—'}</td>
               <td>{r.race_number ?? '—'}</td>
               <td>{r.path_number ?? '—'}</td>
-              <td>{r.result_time || '—'}</td>
+              <td>{r.result_time_display || '—'}</td>
             </tr>
           ))}
         </tbody>

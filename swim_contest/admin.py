@@ -5,7 +5,16 @@ from django.shortcuts import get_object_or_404, render
 from django.urls import path, reverse
 
 from .forms import ResultFormSet
-from .models import Category, Club, Coach, Contest, Entry, Result, Swimmer, Swimstyle
+from .models import (
+    Category,
+    Club,
+    Coach,
+    Contest,
+    Entry,
+    Result,
+    Swimmer,
+    Swimstyle,
+)
 from .services import distribute_races_for_contest
 
 
@@ -38,9 +47,21 @@ class SwimstyleAdmin(admin.ModelAdmin):
 
 @admin.register(Swimmer)
 class SwimmerAdmin(admin.ModelAdmin):
-    list_display = ('last_name', 'first_name', 'gender', 'display_age', 'coach', 'club')
+    list_display = (
+        'last_name',
+        'first_name',
+        'gender',
+        'display_age',
+        'coach',
+        'club',
+    )
     list_filter = ('gender', 'coach', 'club')
-    search_fields = ('last_name', 'first_name', 'coach__last_name', 'club__name')
+    search_fields = (
+        'last_name',
+        'first_name',
+        'coach__last_name',
+        'club__name',
+    )
     autocomplete_fields = ('coach', 'club')
 
     @admin.display(description='Возраст')
@@ -87,12 +108,18 @@ class ContestAdmin(admin.ModelAdmin):
         page_obj = paginator.get_page(page_number)
 
         # Получаем номер заплыва для текущей страницы
-        current_race_number = page_obj.object_list[0] if page_obj.object_list else None
+        current_race_number = (
+            page_obj.object_list[0] if page_obj.object_list else None
+        )
 
         # Фильтруем результаты только для этого заплыва
         results = (
-            Result.objects.filter(entry__contest=contest, race_number=current_race_number)
-            .select_related('entry__swimmer', 'entry__category', 'entry__swimstyle')
+            Result.objects.filter(
+                entry__contest=contest, race_number=current_race_number
+            )
+            .select_related(
+                'entry__swimmer', 'entry__category', 'entry__swimstyle'
+            )
             .order_by('path_number')
         )
 
@@ -100,7 +127,9 @@ class ContestAdmin(admin.ModelAdmin):
             formset = ResultFormSet(request.POST, queryset=results)
             if formset.is_valid():
                 formset.save()
-                self.message_user(request, 'Заплыв успешно обновлен.', messages.SUCCESS)
+                self.message_user(
+                    request, 'Заплыв успешно обновлен.', messages.SUCCESS
+                )
                 # Возвращаемся на ту же страницу с пагинацией
                 return HttpResponseRedirect(f'{request.path}?p={page_number}')
         else:
@@ -111,9 +140,14 @@ class ContestAdmin(admin.ModelAdmin):
             contest=contest,
             formset=formset,
             page_obj=page_obj,  # Передаем объект пагинации в шаблон
-            title=f'Заплыв №{current_race_number} из {paginator.count} ({contest})',
+            title=(
+                f'Заплыв №{current_race_number} из {paginator.count} '
+                f'({contest})'
+            ),
         )
-        return render(request, 'admin/swim_contest/contest/results.html', context)
+        return render(
+            request, 'admin/swim_contest/contest/results.html', context
+        )
 
     def generate_races(self, request, object_id):
         contest = get_object_or_404(Contest, pk=object_id)
@@ -131,7 +165,13 @@ class ContestAdmin(admin.ModelAdmin):
 
 @admin.register(Entry)
 class EntryAdmin(admin.ModelAdmin):
-    list_display = ('swimmer', 'contest', 'category', 'swimstyle', 'is_approved')
+    list_display = (
+        'swimmer',
+        'contest',
+        'category',
+        'swimstyle',
+        'is_approved',
+    )
     list_filter = ('contest', 'category', 'swimstyle', 'is_approved')
     search_fields = ('swimmer__last_name', 'contest__name')
     autocomplete_fields = ('swimmer', 'contest', 'category', 'swimstyle')
@@ -145,7 +185,13 @@ class EntryAdmin(admin.ModelAdmin):
 
 @admin.register(Result)
 class ResultAdmin(admin.ModelAdmin):
-    list_display = ('get_swimmer', 'get_contest', 'race_number', 'path_number', 'result_time')
+    list_display = (
+        'get_swimmer',
+        'get_contest',
+        'race_number',
+        'path_number',
+        'result_time',
+    )
     list_filter = ('entry__contest', 'entry__category')
     search_fields = ('entry__swimmer__last_name', 'entry__swimmer__first_name')
     autocomplete_fields = ('entry',)

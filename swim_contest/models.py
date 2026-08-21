@@ -14,8 +14,12 @@ from .constants import (
 
 
 class Club(models.Model):
-    name = models.CharField(max_length=100, unique=True, verbose_name='Название клуба')
-    city = models.CharField(max_length=50, verbose_name='Город', blank=True, null=True)
+    name = models.CharField(
+        max_length=100, unique=True, verbose_name='Название клуба'
+    )
+    city = models.CharField(
+        max_length=50, verbose_name='Город', blank=True, null=True
+    )
 
     class Meta:
         verbose_name = 'Клуб'
@@ -47,9 +51,15 @@ class Coach(models.Model):
 
 
 class Category(models.Model):
-    gender = models.CharField(max_length=20, choices=GENDERS, verbose_name='Пол')
-    distance = models.PositiveIntegerField(choices=DISTANCES, verbose_name='Дистанция')
-    age_group = models.PositiveIntegerField(choices=AGES, verbose_name='Возрастная группа')
+    gender = models.CharField(
+        max_length=20, choices=GENDERS, verbose_name='Пол'
+    )
+    distance = models.PositiveIntegerField(
+        choices=DISTANCES, verbose_name='Дистанция'
+    )
+    age_group = models.PositiveIntegerField(
+        choices=AGES, verbose_name='Возрастная группа'
+    )
 
     class Meta:
         unique_together = ('gender', 'distance', 'age_group')
@@ -84,9 +94,15 @@ class Swimmer(models.Model):
         null=True,
         blank=True,
     )
-    gender = models.CharField(max_length=20, choices=GENDERS, verbose_name='Пол')
+    gender = models.CharField(
+        max_length=20, choices=GENDERS, verbose_name='Пол'
+    )
     coach = models.ForeignKey(
-        Coach, on_delete=models.SET_NULL, null=True, blank=True, related_name='swimmers'
+        Coach,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='swimmers',
     )
     club = models.ForeignKey(
         Club,
@@ -118,7 +134,10 @@ class Swimmer(models.Model):
         return (
             reference_date.year
             - dob.year
-            - ((reference_date.month, reference_date.day) < (dob.month, dob.day))
+            - (
+                (reference_date.month, reference_date.day)
+                < (dob.month, dob.day)
+            )
         )
 
     def __str__(self):
@@ -142,16 +161,24 @@ class Entry(models.Model):
     """Заявка на участие"""
 
     swimmer = models.ForeignKey(
-        Swimmer, on_delete=models.CASCADE, related_name='entries', verbose_name='Участник'
+        Swimmer,
+        on_delete=models.CASCADE,
+        related_name='entries',
+        verbose_name='Участник',
     )
     manual_age = models.PositiveSmallIntegerField(
         verbose_name='Возраст (если нет даты рожд.)',
         null=True,
         blank=True,
-        help_text='Заполнится автоматически из даты рождения, если она указана',
+        help_text=(
+            'Заполнится автоматически из даты рождения, ' 'если она указана'
+        ),
     )
     contest = models.ForeignKey(
-        Contest, on_delete=models.CASCADE, related_name='entries', verbose_name='Соревнование'
+        Contest,
+        on_delete=models.CASCADE,
+        related_name='entries',
+        verbose_name='Соревнование',
     )
     distance = models.PositiveIntegerField(
         choices=DISTANCES,
@@ -167,9 +194,15 @@ class Entry(models.Model):
         blank=True,
     )
     swimstyle = models.ForeignKey(
-        Swimstyle, on_delete=models.PROTECT, verbose_name='Стиль', null=True, blank=True
+        Swimstyle,
+        on_delete=models.PROTECT,
+        verbose_name='Стиль',
+        null=True,
+        blank=True,
     )
-    stated_time = models.DurationField(null=True, blank=True, verbose_name='Заявочное время')
+    stated_time = models.DurationField(
+        null=True, blank=True, verbose_name='Заявочное время'
+    )
     is_approved = models.BooleanField(default=False, verbose_name='Одобрена')
 
     class Meta:
@@ -222,12 +255,22 @@ class Result(models.Model):
     """Результат заплыва (создается на основе одобренной заявки)."""
 
     entry = models.OneToOneField(
-        Entry, on_delete=models.CASCADE, related_name='result', verbose_name='Заявка'
+        Entry,
+        on_delete=models.CASCADE,
+        related_name='result',
+        verbose_name='Заявка',
     )
-    result_time = models.DurationField(null=True, blank=True, verbose_name='Результат')
-    path_number = models.CharField(max_length=1, choices=PATHS, null=True, blank=True)
+    result_time = models.DurationField(
+        null=True, blank=True, verbose_name='Результат'
+    )
+    path_number = models.CharField(
+        max_length=1, choices=PATHS, null=True, blank=True
+    )
     race_number = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(MIN_RACE_NUMBER), MaxValueValidator(MAX_RACE_NUMBER)],
+        validators=[
+            MinValueValidator(MIN_RACE_NUMBER),
+            MaxValueValidator(MAX_RACE_NUMBER),
+        ],
         null=True,
         blank=True,
     )

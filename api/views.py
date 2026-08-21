@@ -105,7 +105,9 @@ def _calc_age(dob, reference_date=None):
 class EntryViewSet(viewsets.ModelViewSet):
     """Управление заявками на участие."""
 
-    queryset = Entry.objects.select_related('swimmer', 'contest', 'category', 'swimstyle')
+    queryset = Entry.objects.select_related(
+        'swimmer', 'contest', 'category', 'swimstyle'
+    )
     filter_backends = (filters.SearchFilter,)
     search_fields = ('swimmer__last_name', 'contest__name')
 

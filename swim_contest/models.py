@@ -193,26 +193,18 @@ class Entry(models.Model):
     def determine_category(self):
         # Перед сохранением пытаемся определить возраст и категорию
         current_age = self.determine_age()
-        if current_age is not None:
-            # Синхронизируем manual_age для красоты (если считали по DOB)
-            if not self.manual_age:
-                self.manual_age = current_age
-            # Ищем категорию
-            from .constants import AGES
 
-            assigned_group = None
-            for age_limit, _ in sorted(AGES, key=lambda x: x[0], reverse=True):
-                if current_age >= age_limit:
-                    assigned_group = age_limit
-                    break
-        if assigned_group is None:
-            return None
+        # Синхронизируем manual_age для красоты (если считали по DOB)
+        if current_age is not None and not self.manual_age:
+            self.manual_age = current_age
 
-        return Category.objects.filter(
-            gender=self.swimmer.gender,
-            distance=self.distance,
-            age_group=assigned_group,
-        ).first()
+        from .services import resolve_category_for
+
+        return resolve_category_for(
+            self.swimmer.gender,
+            self.distance,
+            current_age,
+        )
 
     def save(self, *args, **kwargs):
         if self.swimstyle is None:

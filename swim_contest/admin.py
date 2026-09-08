@@ -114,12 +114,8 @@ class ContestAdmin(admin.ModelAdmin):
 
         # Фильтруем результаты только для этого заплыва
         results = (
-            Result.objects.filter(
-                entry__contest=contest, race_number=current_race_number
-            )
-            .select_related(
-                'entry__swimmer', 'entry__category', 'entry__swimstyle'
-            )
+            Result.objects.with_entry_details()
+            .filter(entry__contest=contest, race_number=current_race_number)
             .order_by('path_number')
         )
 
@@ -198,8 +194,8 @@ class ResultAdmin(admin.ModelAdmin):
 
     @admin.display(description='Пловец')
     def get_swimmer(self, obj):
-        return obj.entry.swimmer
+        return obj.swimmer
 
     @admin.display(description='Соревнование')
     def get_contest(self, obj):
-        return obj.entry.contest
+        return obj.contest

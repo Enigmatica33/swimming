@@ -1,30 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { createSwimmer, fetchSwimmers } from '../api.js';
+import useFetch from '../hooks/useFetch.js';
+import { GENDER_OPTIONS, genderLabel } from '../helpers.js';
 
 export default function SwimmersPage() {
-  const [swimmers, setSwimmers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { data, loading, error, setError, reload } = useFetch(fetchSwimmers);
+  const swimmers = data ?? [];
 
   const [first_name, setFirstName] = useState('');
   const [last_name, setLastName] = useState('');
   const [gender, setGender] = useState('1_men');
   const [date_of_birth, setDateOfBirth] = useState('');
-
-  const load = async () => {
-    try {
-      setError(null);
-      setSwimmers(await fetchSwimmers());
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    load();
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,7 +24,7 @@ export default function SwimmersPage() {
       setFirstName('');
       setLastName('');
       setDateOfBirth('');
-      await load();
+      await reload();
     } catch (err) {
       setError(err.message);
     }
@@ -52,7 +38,10 @@ export default function SwimmersPage() {
 
       {error && <div className="error">{error}</div>}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}
+      >
         <input
           placeholder="Имя"
           value={first_name}
@@ -66,8 +55,11 @@ export default function SwimmersPage() {
           required
         />
         <select value={gender} onChange={(e) => setGender(e.target.value)}>
-          <option value="1_men">Мужчины</option>
-          <option value="0_women">Женщины</option>
+          {GENDER_OPTIONS.map((g) => (
+            <option key={g.value} value={g.value}>
+              {g.label}
+            </option>
+          ))}
         </select>
         <input
           type="date"
@@ -94,7 +86,7 @@ export default function SwimmersPage() {
               <td>{s.id}</td>
               <td>{s.first_name}</td>
               <td>{s.last_name}</td>
-              <td>{s.gender}</td>
+              <td>{genderLabel(s.gender)}</td>
               <td>{s.date_of_birth || '—'}</td>
               <td>{s.age ?? '—'}</td>
             </tr>

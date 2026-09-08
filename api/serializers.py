@@ -15,31 +15,12 @@ from swim_contest.services import (
     get_active_contest,
     resolve_distance_for,
 )
+from swim_contest.utils import format_swim_time
 
 
 def _obj_str(obj):
     """Безопасный __str__: для None вернёт None."""
     return str(obj) if obj is not None else None
-
-
-def format_swim_time(value) -> str | None:
-    """Форматирует время заплыва: '15,50' или '1,11,59' (если есть минуты).
-
-    Принимает timedelta/длительность; для None возвращает None.
-    """
-    if value is None:
-        return None
-    total_us = (
-        value.days * 86_400_000_000
-        + value.seconds * 1_000_000
-        + value.microseconds
-    )
-    minutes, rem = divmod(total_us, 60_000_000)
-    seconds, frac_us = divmod(rem, 1_000_000)
-    hundredths = frac_us // 10_000
-    if minutes:
-        return f'{minutes},{seconds:02d},{hundredths:02d}'
-    return f'{seconds},{hundredths:02d}'
 
 
 class ClubSerializer(serializers.ModelSerializer):
@@ -54,10 +35,25 @@ class CoachSerializer(serializers.ModelSerializer):
     """Сериализатор тренера."""
 
     club_name = serializers.CharField(source='club.name', read_only=True)
+    # Значение приходит из аннотации Count('swimmers') в queryset —
+    # это один SQL-запрос вместо N запросов COUNT на каждого тренера.
+    swimmers_count = serializers.IntegerField(read_only=True)
+    prize_places = serializers.SerializerMethodField()
 
     class Meta:
         model = Coach
-        fields = ('id', 'first_name', 'last_name', 'club', 'club_name')
+        fields = (
+            'id',
+            'first_name',
+            'last_name',
+            'club',
+            'club_name',
+            'swimmers_count',
+            'prize_places',
+        )
+
+    def get_prize_places(self, obj) -> int:
+        return getattr(obj, 'prize_places', 0)
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -117,7 +113,7 @@ class SwimmerSerializer(serializers.ModelSerializer):
         )
 
     def get_coach_name(self, obj) -> str | None:
-        return str(obj.coach) if obj.coach else None
+        return _obj_str(obj.coach)
 
     def get_age(self, obj) -> int | None:
         return obj.get_age()
@@ -126,9 +122,9 @@ class SwimmerSerializer(serializers.ModelSerializer):
 class ContestSerializer(serializers.ModelSerializer):
     """Сериализатор соревнования."""
 
-    entries_count = serializers.IntegerField(
-        source='entries.count', read_only=True
-    )
+    # Значение приходит из аннотации Count('entries') в queryset —
+    # один SQL-запрос вместо N запросов COUNT на каждое соревнование.
+    entries_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Contest
@@ -221,10 +217,10 @@ class EntryCreateSerializer(serializers.ModelSerializer):
     stated_time_display = serializers.SerializerMethodField()
 
     def get_category_title(self, obj):
-        return str(obj.category) if obj.category else None
+        return _obj_str(obj.category)
 
     def get_swimstyle_name(self, obj):
-        return obj.swimstyle.name if obj.swimstyle else None
+        return _obj_str(obj.swimstyle)
 
     def get_stated_time_display(self, obj):
         return format_swim_time(obj.stated_time)
@@ -320,6 +316,13 @@ class ResultSerializer(serializers.ModelSerializer):
     """Сериализатор результата заплыва."""
 
     swimmer_name = serializers.SerializerMethodField()
+    swimmer = serializers.IntegerField(
+        source='entry.swimmer_id', read_only=True
+    )
+    coach = serializers.IntegerField(
+        source='entry.swimmer.coach_id', read_only=True
+    )
+    coach_name = serializers.SerializerMethodField()
     contest = serializers.IntegerField(
         source='entry.contest_id', read_only=True
     )
@@ -329,11 +332,26 @@ class ResultSerializer(serializers.ModelSerializer):
     contest_date = serializers.DateField(
         source='entry.contest.date', read_only=True
     )
+    category = serializers.IntegerField(
+        source='entry.category_id', read_only=True
+    )
     category_title = serializers.SerializerMethodField()
+    gender = serializers.CharField(
+        source='entry.category.gender', read_only=True
+    )
+    age_group = serializers.IntegerField(
+        source='entry.category.age_group', read_only=True
+    )
+    distance = serializers.IntegerField(
+        source='entry.distance', read_only=True
+    )
     swimstyle_name = serializers.CharField(
         source='entry.swimstyle.name', read_only=True
     )
+    result_time = serializers.DurationField()
     result_time_display = serializers.SerializerMethodField()
+    result_time_us = serializers.SerializerMethodField()
+    stated_time_display = serializers.SerializerMethodField()
 
     class Meta:
         model = Result
@@ -341,13 +359,22 @@ class ResultSerializer(serializers.ModelSerializer):
             'id',
             'entry',
             'swimmer_name',
+            'swimmer',
+            'coach',
+            'coach_name',
             'contest',
             'contest_name',
             'contest_date',
+            'category',
             'category_title',
+            'gender',
+            'age_group',
+            'distance',
             'swimstyle_name',
             'result_time',
             'result_time_display',
+            'result_time_us',
+            'stated_time_display',
             'path_number',
             'race_number',
         )
@@ -355,8 +382,22 @@ class ResultSerializer(serializers.ModelSerializer):
     def get_swimmer_name(self, obj):
         return _obj_str(obj.entry.swimmer)
 
+    def get_coach_name(self, obj):
+        return _obj_str(obj.entry.swimmer.coach)
+
     def get_category_title(self, obj):
         return _obj_str(obj.entry.category)
 
     def get_result_time_display(self, obj):
         return format_swim_time(obj.result_time)
+
+    def get_result_time_us(self, obj):
+        """Микросекунды результата — для сортировки мест внутри категории."""
+        if obj.result_time is None:
+            return None
+        return (
+            obj.result_time.days * 86_400 + obj.result_time.seconds
+        ) * 1_000_000 + obj.result_time.microseconds
+
+    def get_stated_time_display(self, obj):
+        return format_swim_time(obj.entry.stated_time)

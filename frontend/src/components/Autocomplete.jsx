@@ -38,6 +38,11 @@ export default function Autocomplete({
     }, 300);
   };
 
+  // Очищаем таймер при размонтировании, чтобы не было утечки/сетстатов
+  useEffect(() => {
+    return () => clearTimeout(timer.current);
+  }, []);
+
   // Закрываем выпадающий список при клике вне
   useEffect(() => {
     const onClick = (e) => {

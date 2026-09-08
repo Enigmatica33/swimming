@@ -6,11 +6,7 @@ import {
   searchClubs,
   searchCoaches,
 } from '../api.js';
-
-const GENDERS = [
-  { value: '1_men', label: 'Мужской' },
-  { value: '0_women', label: 'Женский' },
-];
+import { fullName, GENDER_OPTIONS } from '../helpers.js';
 
 export default function EntryFormPage() {
   const [firstName, setFirstName] = useState('');
@@ -128,7 +124,7 @@ export default function EntryFormPage() {
 
           <div style={{ display: 'flex', gap: 8 }}>
             <select value={gender} onChange={(e) => setGender(e.target.value)}>
-              {GENDERS.map((g) => (
+              {GENDER_OPTIONS.map((g) => (
                 <option key={g.value} value={g.value}>
                   {g.label}
                 </option>
@@ -165,7 +161,7 @@ export default function EntryFormPage() {
             value={coachSearch}
             onValueChange={setCoachSearch}
             onSelect={setCoach}
-            getLabel={(c) => `${c.last_name} ${c.first_name}`}
+            getLabel={fullName}
           />
           <Autocomplete
             searchFn={searchClubs}

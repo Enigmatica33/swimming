@@ -51,8 +51,13 @@ export const searchSwimmers = (q) => search('swimmers', q);
 export const createSwimmer = (data) =>
   request('/swimmers/', { method: 'POST', body: JSON.stringify(data) });
 
+// --- Карточка пловца (данные + история результатов) ---
+export const fetchSwimmerHistory = (id) =>
+  request(`/swimmers/${id}/history/`);
+
 // --- Тренеры ---
 export const searchCoaches = (q) => search('coaches', q);
+export const fetchCoaches = () => request('/coaches/');
 
 // --- Клубы ---
 export const searchClubs = (q) => search('clubs', q);
@@ -72,5 +77,15 @@ export const resolveCategory = (data) =>
     body: JSON.stringify(data),
   });
 
-// --- Результаты ---
-export const fetchResults = () => request('/results/');
+// --- Результаты (по соревнованию; без id — все) ---
+export const fetchResults = (contestId) => {
+  const q = contestId ? `?contest=${encodeURIComponent(contestId)}` : '';
+  return request(`/results/${q}`);
+};
+
+// --- Ссылки на протоколы соревнования (PDF) ---
+export const startProtocolUrl = (contestId) =>
+  `${BASE_URL}/contests/${contestId}/start-protocol/`;
+
+export const finalProtocolUrl = (contestId) =>
+  `${BASE_URL}/contests/${contestId}/final-protocol/`;

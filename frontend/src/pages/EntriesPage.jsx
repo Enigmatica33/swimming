@@ -1,30 +1,22 @@
-import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchEntries } from '../api.js';
+import useFetch from '../hooks/useFetch.js';
 
 export default function EntriesPage() {
-  const [entries, setEntries] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const load = async () => {
-      try {
-        setEntries(await fetchEntries());
-      } catch (e) {
-        setError(e.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-    load();
-  }, []);
+  const { data, loading, error } = useFetch(fetchEntries);
+  const entries = data ?? [];
 
   if (loading) return <p className="loading">Загрузка…</p>;
 
   return (
     <div className="card">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
         <h2>Заявки</h2>
         <Link to="/entries/new">
           <button>+ Подать заявку</button>

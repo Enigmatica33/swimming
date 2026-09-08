@@ -1,4 +1,5 @@
 from collections import defaultdict
+from datetime import timedelta
 
 from django.db.models import F
 
@@ -71,6 +72,46 @@ def resolve_category_for(sex, distance, age):
 def get_active_contest():
     """Возвращает последнее (самое свежее) соревнование."""
     return Contest.objects.order_by('-date', '-id').first()
+
+
+def compute_places_from_results(results):
+    """Вычисляет места для списка уже загруженных результатов.
+
+    Место считается отдельно внутри каждой пары
+    «соревнование + категория» (ключ: contest_id, category_id):
+    самый быстрый результат — 1-е место, участники без времени уходят
+    в конец.
+
+    Возвращает словарь {result_id: place}. Позволяет считать места для
+    многих соревнований/категорий одним проходом без повторных запросов
+    к БД (устраняет N+1).
+    """
+    groups = defaultdict(list)
+    for r in results:
+        groups[(r.entry.contest_id, r.entry.category_id)].append(r)
+
+    places = {}
+    for items in groups.values():
+        items.sort(
+            key=lambda x: (
+                x.result_time is None,
+                x.result_time or timedelta.max,
+            )
+        )
+        for idx, r in enumerate(items, start=1):
+            places[r.id] = idx
+    return places
+
+
+def compute_places_for_contest(contest):
+    """Места всех результатов соревнования: {result_id: place}.
+
+    Обёртка над compute_places_from_results для одного соревнования.
+    """
+    results = list(
+        Result.objects.with_place_details().filter(entry__contest=contest)
+    )
+    return compute_places_from_results(results)
 
 
 def distribute_races_for_contest(contest):

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<style>
+    @page { size: A4 landscape; margin: 12mm; }
+    body { font-family: "ProtocolFont", sans-serif; font-size: 9pt; color: #000; }
+    h1 { text-align: center; font-size: 14pt; margin: 0 0 2mm; }
+    h2 { text-align: center; font-size: 11pt; margin: 0 0 2mm; font-weight: normal; }
+    .date { text-align: center; margin: 0 0 6mm; }
+    .race { margin-top: 6mm; }
+    .race h3 {
+        font-size: 10pt; margin: 0 0 2mm; padding-bottom: 1mm;
+        border-bottom: 1px solid #000;
+    }
+    table { width: 100%; }
+    th, td { border: 1px solid #000; padding: 2px 4px; }
+    th { text-align: left; }
+    td.c { text-align: center; }
+    td.r { text-align: right; }
+</style>
+</head>
+<body>
+    <h1>{{ contest.name }}</h1>
+    <h2>СТАРТОВЫЙ ПРОТОКОЛ</h2>
+    <p class="date">{{ contest.date|date:"d.m.Y" }}</p>
+
+    {% for race in races %}
+    <div class="race">
+        <h3>Заплыв № {{ race.race_number }}</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Дорожка</th>
+                    <th>ФИО</th>
+                    <th>Клуб</th>
+                    <th>Категория</th>
+                    <th>Заявка</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in race.rows %}
+                <tr>
+                    <td class="c">{{ row.path }}</td>
+                    <td>{{ row.swimmer }}</td>
+                    <td>{{ row.club }}</td>
+                    <td>{{ row.category }}</td>
+                    <td class="r">{{ row.stated }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endfor %}
+</body>
+</html>

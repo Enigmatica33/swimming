@@ -11,6 +11,7 @@ from .constants import (
     MIN_RACE_NUMBER,
     PATHS,
 )
+from .utils import age_on_date
 
 
 class Club(models.Model):
@@ -127,18 +128,10 @@ class Swimmer(models.Model):
         if not self.date_of_birth:
             return None
 
-        if not reference_date:
+        if reference_date is None:
             reference_date = timezone.now().date()
 
-        dob = self.date_of_birth
-        return (
-            reference_date.year
-            - dob.year
-            - (
-                (reference_date.month, reference_date.day)
-                < (dob.month, dob.day)
-            )
-        )
+        return age_on_date(self.date_of_birth, reference_date)
 
     def __str__(self):
         return f'{self.last_name} {self.first_name}'
@@ -251,8 +244,33 @@ class Entry(models.Model):
         super().save(*args, **kwargs)
 
 
+class ResultQuerySet(models.QuerySet):
+    """Менеджер Result с готовыми связями (единая точка select_related)."""
+
+    def with_entry_details(self):
+        """Всё необходимое для отображения результата одним запросом."""
+        return self.select_related(
+            'entry__swimmer',
+            'entry__swimmer__club',
+            'entry__swimmer__coach',
+            'entry__contest',
+            'entry__category',
+            'entry__swimstyle',
+        )
+
+    def with_place_details(self):
+        """Минимальный набор для расчёта мест (категория + пловец)."""
+        return self.select_related('entry__category', 'entry__swimmer')
+
+
+class ResultManager(models.Manager.from_queryset(ResultQuerySet)):
+    pass
+
+
 class Result(models.Model):
     """Результат заплыва (создается на основе одобренной заявки)."""
+
+    objects = ResultManager()
 
     entry = models.OneToOneField(
         Entry,
@@ -274,6 +292,16 @@ class Result(models.Model):
         null=True,
         blank=True,
     )
+
+    @property
+    def swimmer(self):
+        """Пловец (короткий доступ вместо entry.swimmer)."""
+        return self.entry.swimmer
+
+    @property
+    def contest(self):
+        """Соревнование (короткий доступ вместо entry.contest)."""
+        return self.entry.contest
 
     class Meta:
         verbose_name = 'Результат'

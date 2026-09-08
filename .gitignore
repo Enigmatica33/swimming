@@ -47,3 +47,7 @@ frontend/node_modules/
 frontend/dist/
 fixtures/
 scripts/
+
+# Тесты
+**/tests.py
+**/tests/

@@ -1,27 +1,19 @@
-import { useEffect, useState } from 'react';
-import { createContest, fetchContests } from '../api.js';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  createContest,
+  fetchContests,
+  finalProtocolUrl,
+  startProtocolUrl,
+} from '../api.js';
+import useFetch from '../hooks/useFetch.js';
 
 export default function ContestsPage() {
-  const [contests, setContests] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { data, loading, error, setError, reload } = useFetch(fetchContests);
+  const contests = data ?? [];
+
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
-
-  const load = async () => {
-    try {
-      setError(null);
-      setContests(await fetchContests());
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    load();
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,7 +21,7 @@ export default function ContestsPage() {
       await createContest({ name, date });
       setName('');
       setDate('');
-      await load();
+      await reload();
     } catch (err) {
       setError(err.message);
     }
@@ -43,14 +35,22 @@ export default function ContestsPage() {
 
       {error && <div className="error">{error}</div>}
 
-      <form onSubmit={handleSubmit} style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}
+      >
         <input
           placeholder="Название"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
         />
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          required
+        />
         <button type="submit">Добавить</button>
       </form>
 
@@ -61,15 +61,29 @@ export default function ContestsPage() {
             <th>Название</th>
             <th>Дата</th>
             <th>Заявок</th>
+            <th>Протоколы</th>
           </tr>
         </thead>
         <tbody>
           {contests.map((c) => (
             <tr key={c.id}>
               <td>{c.id}</td>
-              <td>{c.name}</td>
+              <td>
+                <Link className="no-underline" to={`/results/${c.id}`}>
+                  {c.name}
+                </Link>
+              </td>
               <td>{c.date}</td>
               <td>{c.entries_count ?? 0}</td>
+              <td>
+                <a href={startProtocolUrl(c.id)} className="btn-link">
+                  Стартовый
+                </a>
+                {' · '}
+                <a href={finalProtocolUrl(c.id)} className="btn-link">
+                  Итоговый
+                </a>
+              </td>
             </tr>
           ))}
         </tbody>
